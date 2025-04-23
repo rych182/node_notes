@@ -101,8 +101,82 @@ function logger(req, res, next) {
         ==========
 
 express.json() no es lo mismo que JSON.parse()
+express.json() es un "middleware de Express"
+Ese middleware lee el cuerpo (body) de las solicitudes HTTP (por ejemplo, POST, PUT, etc.)
+cuando viene en formato JSON, y lo convierte en un objeto JavaScript accesible en req.body
 
-*/
+Ejemplo:
+Si te mandan esta petición POST:
+{
+  "nombre": "Ana",
+  "edad": 25
+}
+
+Gracias a express.json(), tú puedes hacer:
+app.post('/usuario', (req, res) => {
+  console.log(req.body); // { nombre: 'Ana', edad: 25 }
+});
+            =====IMPORTANTE=====
+Aunque tú ya hiciste: const app = express(); // ejecutaste express()
+
+express.json() es una función distinta que está dentro del módulo express, no dentro del app
+En otras palabras:
+express() te da una "app (servidor)"".
+express.json() te da un "middleware" especializado para leer JSON.
+
+ENTONCES ¿Por qué se pone dentro de app.use()?
+Esto se traduce en:
+
+"Voy a "usar este middleware" que viene de express.json() para que "todas las rutas"
+ puedan acceder a req.body cuando venga JSON."
+
+
+  En resumen
+
+Elemento	    ¿Qué es?	                                ¿Para qué sirve?
+express()	    Función que crea la app Express	            Para iniciar tu servidor
+app.use()	    Método para agregar middlewares a la app	Para interceptar y procesar peticiones
+express.json()	Middleware incluido en Express	     Para transformar JSON del cliente en req.body
+
+------------------------------------------------------------------------------------
+app.use('/', routes);
+
+app está ejecutándose Express, y por eso puedo usar .use() que permite conectarle middlewares o rutas.
+¿Qué hace exactamente app.use('/', routes);?
+Lo que le estás diciendo a Express es:
+"Cuando alguien visite cualquier ruta que comience con /, usa lo que tengo definido en routes."
+Y routes es un módulo que tú importaste con esta línea:
+const routes = require('./routes/index');
+
+El código que tienes en /routes/index define un "mini-servidor" o "sub-rutas" que se comportan 
+como middleware.
+
+Cuando haces app.use('/', routes);, estás diciendo:
+“Cuando venga una petición al servidor, pásala por aquí (/) y luego
+ revisa lo que diga este grupo de rutas.”
+
+EJEMPLO:
+Supón que tienes esto en routes/index.js
+router.get('/saludo', (req, res) => {
+  res.send('Hola desde /saludo');
+});
+
+Entonces:
+Si usas app.use('/', routes); → accedes en http://localhost:3000/saludo
+Si usas app.use('/api', routes); → accedes en http://localhost:3000/api/saludo
+
+En resumen:
+
+Código	                ¿Qué hace?
+app.use()	            Usa un middleware o conjunto de rutas en tu servidor
+app.use('/', routes)	Usa las rutas definidas en routes desde la raíz (/)
+routes	                Contiene rutas agrupadas usando express.Router()
+
+La razón por la cual no necesitas especificar .js require('./routes/index');  al final del archivo al usar require en Node.js
+tiene que ver con cómo Node.js resuelve los módulos. 
+
+
+ */
 
 
 
